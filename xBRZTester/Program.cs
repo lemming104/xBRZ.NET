@@ -13,12 +13,12 @@
                 Console.WriteLine("Usage: nBRZ.Shell.exe <inputFileOrDirectory> <outputFileOrDirectory> <scaleFactor>");
                 return;
             }
-            if (!int.TryParse(args[2], out int scale) || scale < 2 || scale > 6)
+            if (!int.TryParse(args[2], out int scale) || scale < 2 || scale > 5)
             {
-                Console.WriteLine("Scale must be an integer between 2 and 6");
+                Console.WriteLine("Scale must be an integer between 2 and 5");
                 return;
             }
-            if (!Directory.Exists(args[1]) && !File.Exists(args[1]))
+            if (!Directory.Exists(args[0]) && !File.Exists(args[0]))
             {
                 Console.WriteLine("Cannot find input file(s).");
                 return;
@@ -49,7 +49,7 @@
                 }
             }
 
-            for (int i = 0; i < inputFiles.Length; i++)
+            for (uint i = 0; i < inputFiles.Length; i++)
             {
                 ProcessImage(inputFiles[i], outputFiles[i], scale);
             }
@@ -57,14 +57,16 @@
 
         private static void ProcessImage(string inputFile, string outputFile, int scale)
         {
-            using (Converters.ArgbImagePooled image = Converters.LoadImageArgb(inputFile, out int width, out int height))
+            xBRZNet.xBRZScaler scaler = new xBRZNet.xBRZScaler((uint)scale, xBRZNet.ScalerCfg.Default);
+
+            using (Converters.ArgbImagePooled image = Converters.LoadImageArgb(inputFile, out uint width, out uint height))
             {
-                int newWidth = width * scale;
-                int newHeight = height * scale;
+                uint newWidth = width * (uint)scale;
+                uint newHeight = height * (uint)scale;
 
                 using (Converters.ArgbImagePooled output = Converters.GetEmptyImage(newWidth, newHeight))
                 {
-                    ImageScaler.ScaleImage(image, output, scale);
+                    scaler.ScaleImage(image, output);
                     Converters.WriteImageArgb(output.Data, width, height, outputFile);
                 }
             }

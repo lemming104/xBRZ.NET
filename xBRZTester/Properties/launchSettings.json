@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "xBRZTester": {
+      "commandName": "Project",
+      "commandLineArgs": "Images ImagesConverted 5"
+    }
+  }
+}

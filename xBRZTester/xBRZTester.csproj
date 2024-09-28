@@ -3,6 +3,7 @@
     <OutputType>exe</OutputType>
     <IsTrimmable>true</IsTrimmable>
     <PublishAot>true</PublishAot>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>

@@ -7,5 +7,7 @@
         public double EqualColorTolerance { get; set; } = 30;
         public double DominantDirectionThreshold { get; set; } = 3.6;
         public double SteepDirectionThreshold { get; set; } = 2.2;
+
+        public static ScalerCfg Default = new ScalerCfg();
     }
 }
