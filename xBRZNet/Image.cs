@@ -1,14 +1,18 @@
 ﻿namespace xBRZNet
 {
     using System;
+    using System.Buffers;
 
-    public class Image
+    public class Image : IDisposable
     {
-        public readonly uint Width;
-        public readonly uint Height;
-        public readonly uint[] Data;
+        private static ArrayPool<int> IntArrayPool = ArrayPool<int>.Shared;
+        private bool disposedValue;
 
-        public Image(uint[] data, uint width, uint height)
+        public readonly int Width;
+        public readonly int Height;
+        public readonly int[] Data;
+
+        public Image(int width, int height)
         {
             if (width == 0)
             {
@@ -20,14 +24,28 @@
                 throw new ArgumentException("Height must be greater than zero", nameof(height));
             }
 
-            if (data.Length < width * height)
-            {
-                throw new ArgumentException("Data array must be greater than or equal to the product of width and height", nameof(data));
-            }
-
-            Data = data;
             Width = width;
             Height = height;
+            Data = IntArrayPool.Rent(Width * Height);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    IntArrayPool.Return(Data);
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

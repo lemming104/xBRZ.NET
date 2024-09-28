@@ -1,6 +1,7 @@
 ﻿namespace xBRZNet
 {
     using System;
+    using System.Drawing;
     using xBRZNet.Blend;
     using xBRZNet.Color;
     using xBRZNet.Common;
@@ -20,7 +21,7 @@
     */
 
     /*
-        -> map source (srcWidth * srcHeight) to target (scale * width x scale * height)
+        -> map source (src.Width * src.Height) to target (scale * width x scale * height)
         image, optionally processing a half-open slice of rows [yFirst, yLast) only
         -> color format: ARGB (BGRA char order), alpha channel unused
         -> support for source/target pitch in chars!
@@ -222,45 +223,44 @@
             }
         }
 
-        //scaler policy: see "Scaler2x" reference implementation
         /// <summary>
         /// Scale an image
         /// </summary>
         /// <param name="src">Source image, color format: ARGB (BGRA char order)</param>
         /// <param name="trg">Target image</param>
-        /// <param name="srcWidth">Source image width</param>
-        /// <param name="srcHeight">Source image height</param>
+        public void ScaleImage(Image src, Image trg)
+        {
+            ScaleImage(src, trg, 0, src.Height);
+        }
+
+        /// <param name="src.Width">Source image width</param>
+        /// <param name="src.Height">Source image height</param>
         /// <param name="yFirst">First row to process</param>
         /// <param name="yLast">Last row to process</param>
-        public void ScaleImage(int[] src, int[] trg, int srcWidth, int srcHeight, int yFirst = 0, int yLast = 0)
+        public void ScaleImage(Image src, Image trg, int yFirst, int yLast)
         {
             yFirst = Math.Max(yFirst, 0);
-            yLast = Math.Min(yLast, srcHeight);
+            yLast = Math.Min(yLast, src.Height);
 
             if (yFirst >= yLast)
             {
                 throw new ArgumentException("yLast must be greater than yFirst", nameof(yLast));
             }
 
-            if (srcWidth < 0)
+            if (src.Width < 0)
             {
-                throw new ArgumentException("Width must be greater than zero", nameof(srcWidth));
+                throw new ArgumentException("Width must be greater than zero", nameof(src.Width));
             }
 
-            if (src.Length < srcWidth * srcHeight)
-            {
-                throw new ArgumentException("Image array does not match dimensions", nameof(src));
-            }
-
-            int trgWidth = srcWidth * this._scaler.Scale;
+            int trgWidth = src.Width * this._scaler.Scale;
             int minTrgSize = trgWidth * (yLast - yFirst) * this._scaler.Scale;
-            if (trg.Length < minTrgSize)
+            if (trg.Data.Length < minTrgSize)
             {
                 throw new ArgumentException("Destination array not large enough", nameof(trg));
             }
 
             //temporary buffer for "on the fly preprocessing"
-            char[] preProcBuffer = new char[srcWidth];
+            char[] preProcBuffer = new char[src.Width];
 
             Kernel4x4 ker4 = new Kernel4x4();
 
@@ -272,37 +272,37 @@
             {
                 int y = yFirst - 1;
 
-                int sM1 = srcWidth * Math.Max(y - 1, 0);
-                int s0 = srcWidth * y; //center line
-                int sP1 = srcWidth * Math.Min(y + 1, srcHeight - 1);
-                int sP2 = srcWidth * Math.Min(y + 2, srcHeight - 1);
+                int sM1 = src.Width * Math.Max(y - 1, 0);
+                int s0 = src.Width * y; //center line
+                int sP1 = src.Width * Math.Min(y + 1, src.Height - 1);
+                int sP2 = src.Width * Math.Min(y + 2, src.Height - 1);
 
-                for (int x = 0; x < srcWidth; ++x)
+                for (int x = 0; x < src.Width; ++x)
                 {
                     int xM1 = Math.Max(x - 1, 0);
-                    int xP1 = Math.Min(x + 1, srcWidth - 1);
-                    int xP2 = Math.Min(x + 2, srcWidth - 1);
+                    int xP1 = Math.Min(x + 1, src.Width - 1);
+                    int xP2 = Math.Min(x + 2, src.Width - 1);
 
                     //read sequentially from memory as far as possible
-                    ker4.A = src[sM1 + xM1];
-                    ker4.B = src[sM1 + x];
-                    ker4.C = src[sM1 + xP1];
-                    ker4.D = src[sM1 + xP2];
+                    ker4.A = src.Data[sM1 + xM1];
+                    ker4.B = src.Data[sM1 + x];
+                    ker4.C = src.Data[sM1 + xP1];
+                    ker4.D = src.Data[sM1 + xP2];
 
-                    ker4.E = src[s0 + xM1];
-                    ker4.F = src[s0 + x];
-                    ker4.G = src[s0 + xP1];
-                    ker4.H = src[s0 + xP2];
+                    ker4.E = src.Data[s0 + xM1];
+                    ker4.F = src.Data[s0 + x];
+                    ker4.G = src.Data[s0 + xP1];
+                    ker4.H = src.Data[s0 + xP2];
 
-                    ker4.I = src[sP1 + xM1];
-                    ker4.J = src[sP1 + x];
-                    ker4.K = src[sP1 + xP1];
-                    ker4.L = src[sP1 + xP2];
+                    ker4.I = src.Data[sP1 + xM1];
+                    ker4.J = src.Data[sP1 + x];
+                    ker4.K = src.Data[sP1 + xP1];
+                    ker4.L = src.Data[sP1 + xP2];
 
-                    ker4.M = src[sP2 + xM1];
-                    ker4.N = src[sP2 + x];
-                    ker4.O = src[sP2 + xP1];
-                    ker4.P = src[sP2 + xP2];
+                    ker4.M = src.Data[sP2 + xM1];
+                    ker4.N = src.Data[sP2 + x];
+                    ker4.O = src.Data[sP2 + xP1];
+                    ker4.P = src.Data[sP2 + xP2];
 
                     this.PreProcessCorners(ker4); // writes to blendResult
                     /*
@@ -315,14 +315,14 @@
                     */
                     preProcBuffer[x] = preProcBuffer[x].SetTopR(this._blendResult.J);
 
-                    if (x + 1 < srcWidth)
+                    if (x + 1 < src.Width)
                     {
                         preProcBuffer[x + 1] = preProcBuffer[x + 1].SetTopL(this._blendResult.K);
                     }
                 }
             }
 
-            this._outputMatrix = new OutputMatrix(this._scaler.Scale, trg, trgWidth);
+            this._outputMatrix = new OutputMatrix(this._scaler.Scale, trg.Data, trgWidth);
 
             Kernel3x3 ker3 = new Kernel3x3();
 
@@ -331,42 +331,42 @@
                 //consider MT "striped" access
                 int trgi = this._scaler.Scale * y * trgWidth;
 
-                int sM1 = srcWidth * Math.Max(y - 1, 0);
-                int s0 = srcWidth * y; //center line
-                int sP1 = srcWidth * Math.Min(y + 1, srcHeight - 1);
-                int sP2 = srcWidth * Math.Min(y + 2, srcHeight - 1);
+                int sM1 = src.Width * Math.Max(y - 1, 0);
+                int s0 = src.Width * y; //center line
+                int sP1 = src.Width * Math.Min(y + 1, src.Height - 1);
+                int sP2 = src.Width * Math.Min(y + 2, src.Height - 1);
 
                 char blendXy1 = (char)0;
 
-                for (int x = 0; x < srcWidth; ++x, trgi += this._scaler.Scale)
+                for (int x = 0; x < src.Width; ++x, trgi += this._scaler.Scale)
                 {
                     int xM1 = Math.Max(x - 1, 0);
-                    int xP1 = Math.Min(x + 1, srcWidth - 1);
-                    int xP2 = Math.Min(x + 2, srcWidth - 1);
+                    int xP1 = Math.Min(x + 1, src.Width - 1);
+                    int xP2 = Math.Min(x + 2, src.Width - 1);
 
                     //evaluate the four corners on bottom-right of current pixel
                     //blend_xy for current (x, y) position
 
                     //read sequentially from memory as far as possible
-                    ker4.A = src[sM1 + xM1];
-                    ker4.B = src[sM1 + x];
-                    ker4.C = src[sM1 + xP1];
-                    ker4.D = src[sM1 + xP2];
+                    ker4.A = src.Data[sM1 + xM1];
+                    ker4.B = src.Data[sM1 + x];
+                    ker4.C = src.Data[sM1 + xP1];
+                    ker4.D = src.Data[sM1 + xP2];
 
-                    ker4.E = src[s0 + xM1];
-                    ker4.F = src[s0 + x];
-                    ker4.G = src[s0 + xP1];
-                    ker4.H = src[s0 + xP2];
+                    ker4.E = src.Data[s0 + xM1];
+                    ker4.F = src.Data[s0 + x];
+                    ker4.G = src.Data[s0 + xP1];
+                    ker4.H = src.Data[s0 + xP2];
 
-                    ker4.I = src[sP1 + xM1];
-                    ker4.J = src[sP1 + x];
-                    ker4.K = src[sP1 + xP1];
-                    ker4.L = src[sP1 + xP2];
+                    ker4.I = src.Data[sP1 + xM1];
+                    ker4.J = src.Data[sP1 + x];
+                    ker4.K = src.Data[sP1 + xP1];
+                    ker4.L = src.Data[sP1 + xP2];
 
-                    ker4.M = src[sP2 + xM1];
-                    ker4.N = src[sP2 + x];
-                    ker4.O = src[sP2 + xP1];
-                    ker4.P = src[sP2 + xP2];
+                    ker4.M = src.Data[sP2 + xM1];
+                    ker4.N = src.Data[sP2 + x];
+                    ker4.O = src.Data[sP2 + xP1];
+                    ker4.P = src.Data[sP2 + xP2];
 
                     this.PreProcessCorners(ker4); // writes to blendResult
 
@@ -392,7 +392,7 @@
                     //buffer for use on next column
                     blendXy1 = ((char)0).SetTopL(this._blendResult.K);
 
-                    if (x + 1 < srcWidth)
+                    if (x + 1 < src.Width)
                     {
                         //set 3rd known corner for (x + 1, y)
                         preProcBuffer[x + 1] = preProcBuffer[x + 1].SetBottomL(this._blendResult.G);
@@ -401,7 +401,7 @@
                     //fill block of size scale * scale with the given color
                     //  //place *after* preprocessing step, to not overwrite the
                     //  //results while processing the the last pixel!
-                    FillBlock(trg, trgi, trgWidth, src[s0 + x], this._scaler.Scale);
+                    FillBlock(trg.Data, trgi, trgWidth, src.Data[s0 + x], this._scaler.Scale);
 
                     //blend four corners of current pixel
                     if (blendXy == 0) continue;
@@ -409,17 +409,17 @@
                     const int a = 0, b = 1, c = 2, d = 3, e = 4, f = 5, g = 6, h = 7, i = 8;
 
                     //read sequentially from memory as far as possible
-                    ker3._[a] = src[sM1 + xM1];
-                    ker3._[b] = src[sM1 + x];
-                    ker3._[c] = src[sM1 + xP1];
+                    ker3._[a] = src.Data[sM1 + xM1];
+                    ker3._[b] = src.Data[sM1 + x];
+                    ker3._[c] = src.Data[sM1 + xP1];
 
-                    ker3._[d] = src[s0 + xM1];
-                    ker3._[e] = src[s0 + x];
-                    ker3._[f] = src[s0 + xP1];
+                    ker3._[d] = src.Data[s0 + xM1];
+                    ker3._[e] = src.Data[s0 + x];
+                    ker3._[f] = src.Data[s0 + xP1];
 
-                    ker3._[g] = src[sP1 + xM1];
-                    ker3._[h] = src[sP1 + x];
-                    ker3._[i] = src[sP1 + xP1];
+                    ker3._[g] = src.Data[sP1 + xM1];
+                    ker3._[h] = src.Data[sP1 + x];
+                    ker3._[i] = src.Data[sP1 + xP1];
 
                     this.ScalePixel(this._scaler, (int)RotationDegree.R0, ker3, trgi, blendXy);
                     this.ScalePixel(this._scaler, (int)RotationDegree.R90, ker3, trgi, blendXy);

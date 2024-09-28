@@ -57,17 +57,17 @@
 
         private static void ProcessImage(string inputFile, string outputFile, int scale)
         {
-            xBRZNet.xBRZScaler scaler = new xBRZNet.xBRZScaler((uint)scale, xBRZNet.ScalerCfg.Default);
+            xBRZNet.xBRZScaler scaler = new xBRZNet.xBRZScaler(scale, xBRZNet.ScalerCfg.Default);
 
-            using (Converters.ArgbImagePooled image = Converters.LoadImageArgb(inputFile, out uint width, out uint height))
+            using (xBRZNet.Image image = Converters.LoadImageArgb(inputFile, out int width, out int height))
             {
-                uint newWidth = width * (uint)scale;
-                uint newHeight = height * (uint)scale;
+                int newWidth = width * scale;
+                int newHeight = height * scale;
 
-                using (Converters.ArgbImagePooled output = Converters.GetEmptyImage(newWidth, newHeight))
+                using (xBRZNet.Image output = new xBRZNet.Image(newWidth, newHeight))
                 {
                     scaler.ScaleImage(image, output);
-                    Converters.WriteImageArgb(output.Data, width, height, outputFile);
+                    Converters.WriteImageArgb(output.Data, newWidth, newHeight, outputFile);
                 }
             }
         }
