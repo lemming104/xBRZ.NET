@@ -1,16 +1,15 @@
-﻿using System;
-using xBRZNet.Common;
-using xBRZNet.Scalers;
-
-namespace xBRZNet.Color
+﻿namespace xBRZNet.Color
 {
+    using System;
+    using xBRZNet.Common;
+
     internal class ColorDist
     {
         protected readonly ScalerCfg Cfg;
 
         public ColorDist(ScalerCfg cfg)
         {
-            Cfg = cfg;
+            this.Cfg = cfg;
         }
 
         public double DistYCbCr(int pix1, int pix2)
@@ -19,9 +18,9 @@ namespace xBRZNet.Color
 
             //http://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion
             //YCbCr conversion is a matrix multiplication => take advantage of linearity by subtracting first!
-            var rDiff = ((pix1 & Mask.Red) - (pix2 & Mask.Red)) >> 16; //we may delay division by 255 to after matrix multiplication
-            var gDiff = ((pix1 & Mask.Green) - (pix2 & Mask.Green)) >> 8;
-            var bDiff = (pix1 & Mask.Blue) - (pix2 & Mask.Blue); //subtraction for int is noticeable faster than for double
+            int rDiff = ((pix1 & Mask.Red) - (pix2 & Mask.Red)) >> 16; //we may delay division by 255 to after matrix multiplication
+            int gDiff = ((pix1 & Mask.Green) - (pix2 & Mask.Green)) >> 8;
+            int bDiff = (pix1 & Mask.Blue) - (pix2 & Mask.Blue); //subtraction for int is noticeable faster than for double
 
             const double kB = 0.0722; //ITU-R BT.709 conversion
             const double kR = 0.2126;
@@ -30,13 +29,13 @@ namespace xBRZNet.Color
             const double scaleB = 0.5 / (1 - kB);
             const double scaleR = 0.5 / (1 - kR);
 
-            var y = kR * rDiff + kG * gDiff + kB * bDiff; //[!], analog YCbCr!
-            var cB = scaleB * (bDiff - y);
-            var cR = scaleR * (rDiff - y);
+            double y = (kR * rDiff) + (kG * gDiff) + (kB * bDiff); //[!], analog YCbCr!
+            double cB = scaleB * (bDiff - y);
+            double cR = scaleR * (rDiff - y);
 
             // Skip division by 255.
             // Also skip square root here by pre-squaring the config option equalColorTolerance.
-            return Math.Pow(Cfg.LuminanceWeight * y, 2) + Math.Pow(cB, 2) + Math.Pow(cR, 2);
+            return Math.Pow(this.Cfg.LuminanceWeight * y, 2) + Math.Pow(cB, 2) + Math.Pow(cR, 2);
         }
     }
 }

@@ -1,7 +1,8 @@
-﻿using xBRZNet.Common;
-
+﻿
 namespace xBRZNet.Blend
 {
+    using xBRZNet.Common;
+
     internal static class BlendInfo
     {
         public static char GetTopL(this char b) { return (char)(b & 0x3); }
@@ -16,10 +17,10 @@ namespace xBRZNet.Blend
 
         public static char Rotate(this char b, RotationDegree rotDeg)
         {
-            var l = (int)rotDeg << 1;
-            var r = 8 - l;
+            int l = (int)rotDeg << 1;
+            int r = 8 - l;
 
-            return (char)(b << l | b >> r);
+            return (char)((b << l) | (b >> r));
         }
     }
 }

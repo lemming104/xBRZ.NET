@@ -1,8 +1,7 @@
-﻿using System;
-using System.Linq;
-
-namespace xBRZNet.Scalers
+﻿namespace xBRZNet.Scalers
 {
+    using System.Linq;
+
     internal static class ScaleSize
     {
         private static readonly IScaler[] Scalers =
@@ -15,8 +14,9 @@ namespace xBRZNet.Scalers
 
         public static IScaler ToIScaler(this int scaleSize)
         {
-            // MJY: Need value checks to assure scaleSize is between 2-5 inclusive.
-            return Scalers.Single(s => s.Scale == scaleSize);
+            return scaleSize < 2 || scaleSize > 5
+                ? throw new System.ArgumentException("Scale must be in the range 2-5", nameof(scaleSize))
+                : Scalers.Single(s => s.Scale == scaleSize);
         }
     }
 }

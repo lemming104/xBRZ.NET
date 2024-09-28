@@ -1,7 +1,7 @@
-﻿using xBRZNet.Common;
-
-namespace xBRZNet.Scalers
+﻿namespace xBRZNet.Scalers
 {
+    using xBRZNet.Common;
+
     //access matrix area, top-left at position "out" for image with given width
     internal class OutputMatrix
     {
@@ -16,22 +16,22 @@ namespace xBRZNet.Scalers
 
         public OutputMatrix(int scale, int[] outPtr, int outWidth)
         {
-            _n = (scale - 2) * (Rot.MaxRotations * MaxScaleSquared);
-            _out = new IntPtr(outPtr);
-            _outWidth = outWidth;
+            this._n = (scale - 2) * Rot.MaxRotations * MaxScaleSquared;
+            this._out = new IntPtr(outPtr);
+            this._outWidth = outWidth;
         }
 
         public void Move(int rotDeg, int outi)
         {
-            _nr = _n + rotDeg * MaxScaleSquared;
-            _outi = outi;
+            this._nr = this._n + (rotDeg * MaxScaleSquared);
+            this._outi = outi;
         }
 
         public IntPtr Ref(int i, int j)
         {
-            var rot = MatrixRotation[_nr + i * MaxScale + j];
-            _out.Position(_outi + rot.J + rot.I * _outWidth);
-            return _out;
+            IntPair rot = MatrixRotation[this._nr + (i * MaxScale) + j];
+            this._out.Position(this._outi + rot.J + (rot.I * this._outWidth));
+            return this._out;
         }
 
         //calculate input matrix coordinates after rotation at program startup
@@ -39,16 +39,16 @@ namespace xBRZNet.Scalers
 
         static OutputMatrix()
         {
-            for (var n = 2; n < MaxScale + 1; n++)
+            for (int n = 2; n < MaxScale + 1; n++)
             {
-                for (var r = 0; r < Rot.MaxRotations; r++)
+                for (int r = 0; r < Rot.MaxRotations; r++)
                 {
-                    var nr = (n - 2) * (Rot.MaxRotations * MaxScaleSquared) + r * MaxScaleSquared;
-                    for (var i = 0; i < MaxScale; i++)
+                    int nr = ((n - 2) * Rot.MaxRotations * MaxScaleSquared) + (r * MaxScaleSquared);
+                    for (int i = 0; i < MaxScale; i++)
                     {
-                        for (var j = 0; j < MaxScale; j++)
+                        for (int j = 0; j < MaxScale; j++)
                         {
-                            MatrixRotation[nr + i * MaxScale + j] = BuildMatrixRotation(r, i, j, n);
+                            MatrixRotation[nr + (i * MaxScale) + j] = BuildMatrixRotation(r, i, j, n);
                         }
                     }
                 }
@@ -67,7 +67,7 @@ namespace xBRZNet.Scalers
             else
             {
                 //old coordinates before rotation!
-                var old = BuildMatrixRotation(rotDeg - 1, i, j, n);
+                IntPair old = BuildMatrixRotation(rotDeg - 1, i, j, n);
                 iOld = n - 1 - old.J;
                 jOld = old.I;
             }

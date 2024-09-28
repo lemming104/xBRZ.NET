@@ -1,14 +1,11 @@
-﻿using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using xBRZNet.Blend;
-using xBRZNet.Color;
-using xBRZNet.Common;
-using xBRZNet.Extensions;
-using xBRZNet.Scalers;
-
-namespace xBRZNet
+﻿namespace xBRZNet
 {
+    using System;
+    using xBRZNet.Blend;
+    using xBRZNet.Color;
+    using xBRZNet.Common;
+    using xBRZNet.Scalers;
+
     //http://intrepidis.blogspot.com/2014/02/xbrz-in-java.html
     /*
         -------------------------------------------------------------------------
@@ -53,45 +50,28 @@ namespace xBRZNet
     // ReSharper disable once InconsistentNaming
     public class xBRZScaler
     {
-        // scaleSize = 2 to 5
-        public Bitmap ScaleImage(Bitmap image, int scaleSize, ScalerCfg config = null)
-        {
-            config = config ?? new ScalerCfg();
-
-            var fixedFormatImage = image.ChangeFormat(PixelFormat.Format32bppRgb);
-            var rgbValues = fixedFormatImage.ToIntArray();
-
-            var scaleFactor = scaleSize;
-            var scaledRbgValues = new int[rgbValues.Length * (scaleFactor * scaleFactor)];
-
-            ScaleImage(scaleSize, rgbValues, scaledRbgValues, fixedFormatImage.Width, fixedFormatImage.Height, config, 0, int.MaxValue);
-
-            return scaledRbgValues.ToBitmap(fixedFormatImage.Width * scaleFactor, fixedFormatImage.Height * scaleFactor, fixedFormatImage.PixelFormat);
-        }
-
-        public void ScaleImage(int scaleSize, int[] src, int[] trg, int srcWidth, int srcHeight, ScalerCfg cfg, int yFirst, int yLast)
-        {
-            _scaler = scaleSize.ToIScaler();
-            _cfg = cfg;
-            _colorDistance = new ColorDist(_cfg);
-            _colorEqualizer = new ColorEq(_cfg);
-            ScaleImageImpl(src, trg, srcWidth, srcHeight, yFirst, yLast);
-        }
-
-        private ScalerCfg _cfg;
-        private IScaler _scaler;
-        private OutputMatrix _outputMatrix;
+        private readonly ScalerCfg _cfg;
+        private readonly IScaler _scaler;
+        private OutputMatrix? _outputMatrix;
         private readonly BlendResult _blendResult = new BlendResult();
 
-        private ColorDist _colorDistance;
-        private ColorEq _colorEqualizer;
+        private readonly ColorDist _colorDistance;
+        private readonly ColorEq _colorEqualizer;
+
+        public xBRZScaler(int scaleSize, ScalerCfg cfg)
+        {
+            this._scaler = scaleSize.ToIScaler();
+            this._cfg = cfg;
+            this._colorDistance = new ColorDist(this._cfg);
+            this._colorEqualizer = new ColorEq(this._cfg);
+        }
 
         //fill block with the given color
         private static void FillBlock(int[] trg, int trgi, int pitch, int col, int blockSize)
         {
-            for (var y = 0; y < blockSize; ++y, trgi += pitch)
+            for (int y = 0; y < blockSize; ++y, trgi += pitch)
             {
-                for (var x = 0; x < blockSize; ++x)
+                for (int x = 0; x < blockSize; ++x)
                 {
                     trg[trgi + x] = col;
                 }
@@ -99,40 +79,40 @@ namespace xBRZNet
         }
 
         //detect blend direction
-        private void PreProcessCorners( Kernel4x4 ker)
+        private void PreProcessCorners(Kernel4x4 ker)
         {
-            _blendResult.Reset();
+            this._blendResult.Reset();
 
             if ((ker.F == ker.G && ker.J == ker.K) || (ker.F == ker.J && ker.G == ker.K)) return;
 
-            var dist = _colorDistance;
-            
+            ColorDist dist = this._colorDistance;
+
             const int weight = 4;
-            var jg = dist.DistYCbCr(ker.I, ker.F) + dist.DistYCbCr(ker.F, ker.C) + dist.DistYCbCr(ker.N, ker.K) + dist.DistYCbCr(ker.K, ker.H) + weight * dist.DistYCbCr(ker.J, ker.G);
-            var fk = dist.DistYCbCr(ker.E, ker.J) + dist.DistYCbCr(ker.J, ker.O) + dist.DistYCbCr(ker.B, ker.G) + dist.DistYCbCr(ker.G, ker.L) + weight * dist.DistYCbCr(ker.F, ker.K);
+            double jg = dist.DistYCbCr(ker.I, ker.F) + dist.DistYCbCr(ker.F, ker.C) + dist.DistYCbCr(ker.N, ker.K) + dist.DistYCbCr(ker.K, ker.H) + (weight * dist.DistYCbCr(ker.J, ker.G));
+            double fk = dist.DistYCbCr(ker.E, ker.J) + dist.DistYCbCr(ker.J, ker.O) + dist.DistYCbCr(ker.B, ker.G) + dist.DistYCbCr(ker.G, ker.L) + (weight * dist.DistYCbCr(ker.F, ker.K));
 
             if (jg < fk)
             {
-                var dominantGradient = _cfg.DominantDirectionThreshold * jg < fk;
+                bool dominantGradient = this._cfg.DominantDirectionThreshold * jg < fk;
                 if (ker.F != ker.G && ker.F != ker.J)
                 {
-                    _blendResult.F = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
+                    this._blendResult.F = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
                 }
                 if (ker.K != ker.J && ker.K != ker.G)
                 {
-                    _blendResult.K = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
+                    this._blendResult.K = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
                 }
             }
             else if (fk < jg)
             {
-                var dominantGradient = _cfg.DominantDirectionThreshold * fk < jg;
+                bool dominantGradient = this._cfg.DominantDirectionThreshold * fk < jg;
                 if (ker.J != ker.F && ker.J != ker.K)
                 {
-                    _blendResult.J = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
+                    this._blendResult.J = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
                 }
                 if (ker.G != ker.F && ker.G != ker.K)
                 {
-                    _blendResult.G = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
+                    this._blendResult.G = (char)(dominantGradient ? BlendType.Dominant : BlendType.Normal);
                 }
             }
         }
@@ -151,23 +131,25 @@ namespace xBRZNet
         private void ScalePixel(IScaler scaler, int rotDeg, Kernel3x3 ker, int trgi, char blendInfo)
         {
             // int a = ker._[Rot._[(0 << 2) + rotDeg]];
-            var b = ker._[Rot._[(1 << 2) + rotDeg]];
-            var c = ker._[Rot._[(2 << 2) + rotDeg]];
-            var d = ker._[Rot._[(3 << 2) + rotDeg]];
-            var e = ker._[Rot._[(4 << 2) + rotDeg]];
-            var f = ker._[Rot._[(5 << 2) + rotDeg]];
-            var g = ker._[Rot._[(6 << 2) + rotDeg]];
-            var h = ker._[Rot._[(7 << 2) + rotDeg]];
-            var i = ker._[Rot._[(8 << 2) + rotDeg]];
+            int b = ker._[Rot._[(1 << 2) + rotDeg]];
+            int c = ker._[Rot._[(2 << 2) + rotDeg]];
+            int d = ker._[Rot._[(3 << 2) + rotDeg]];
+            int e = ker._[Rot._[(4 << 2) + rotDeg]];
+            int f = ker._[Rot._[(5 << 2) + rotDeg]];
+            int g = ker._[Rot._[(6 << 2) + rotDeg]];
+            int h = ker._[Rot._[(7 << 2) + rotDeg]];
+            int i = ker._[Rot._[(8 << 2) + rotDeg]];
 
-            var blend = blendInfo.Rotate((RotationDegree)rotDeg);
+            char blend = blendInfo.Rotate((RotationDegree)rotDeg);
 
             if ((BlendType)blend.GetBottomR() == BlendType.None) return;
 
-            var eq = _colorEqualizer;
-            var dist = _colorDistance;
+            ColorEq eq = this._colorEqualizer;
+            ColorDist dist = this._colorDistance;
 
             bool doLineBlend;
+
+#pragma warning disable IDE0045
 
             if (blend.GetBottomR() >= (char)BlendType.Dominant)
             {
@@ -194,11 +176,13 @@ namespace xBRZNet
                 doLineBlend = true;
             }
 
-            //choose most similar color
-            var px = dist.DistYCbCr(e, f) <= dist.DistYCbCr(e, h) ? f : h;
+#pragma warning restore ID0045
 
-            var out_ = _outputMatrix;
-            out_.Move(rotDeg, trgi);
+            //choose most similar color
+            int px = dist.DistYCbCr(e, f) <= dist.DistYCbCr(e, h) ? f : h;
+
+            OutputMatrix? out_ = this._outputMatrix;
+            out_!.Move(rotDeg, trgi);
 
             if (!doLineBlend)
             {
@@ -208,11 +192,11 @@ namespace xBRZNet
 
             //test sample: 70% of values max(fg, hc) / min(fg, hc)
             //are between 1.1 and 3.7 with median being 1.9
-             var fg = dist.DistYCbCr(f, g);
-             var hc = dist.DistYCbCr(h, c);
+            double fg = dist.DistYCbCr(f, g);
+            double hc = dist.DistYCbCr(h, c);
 
-             var haveShallowLine = _cfg.SteepDirectionThreshold * fg <= hc && e != g && d != g;
-             var haveSteepLine = _cfg.SteepDirectionThreshold * hc <= fg && e != c && b != c;
+            bool haveShallowLine = this._cfg.SteepDirectionThreshold * fg <= hc && e != g && d != g;
+            bool haveSteepLine = this._cfg.SteepDirectionThreshold * hc <= fg && e != c && b != c;
 
             if (haveShallowLine)
             {
@@ -223,7 +207,7 @@ namespace xBRZNet
                 else
                 {
                     scaler.BlendLineShallow(px, out_);
-                } 
+                }
             }
             else
             {
@@ -239,19 +223,46 @@ namespace xBRZNet
         }
 
         //scaler policy: see "Scaler2x" reference implementation
-        private void ScaleImageImpl(int[] src, int[] trg, int srcWidth, int srcHeight, int yFirst, int yLast)
+        /// <summary>
+        /// Scale an image
+        /// </summary>
+        /// <param name="src">Source image, color format: ARGB (BGRA char order)</param>
+        /// <param name="trg">Target image</param>
+        /// <param name="srcWidth">Source image width</param>
+        /// <param name="srcHeight">Source image height</param>
+        /// <param name="yFirst">First row to process</param>
+        /// <param name="yLast">Last row to process</param>
+        public void ScaleImage(int[] src, int[] trg, int srcWidth, int srcHeight, int yFirst = 0, int yLast = 0)
         {
             yFirst = Math.Max(yFirst, 0);
             yLast = Math.Min(yLast, srcHeight);
 
-            if (yFirst >= yLast || srcWidth <= 0) return;
+            if (yFirst >= yLast)
+            {
+                throw new ArgumentException("yLast must be greater than yFirst", nameof(yLast));
+            }
 
-            var trgWidth = srcWidth * _scaler.Scale;
+            if (srcWidth < 0)
+            {
+                throw new ArgumentException("Width must be greater than zero", nameof(srcWidth));
+            }
+
+            if (src.Length < srcWidth * srcHeight)
+            {
+                throw new ArgumentException("Image array does not match dimensions", nameof(src));
+            }
+
+            int trgWidth = srcWidth * this._scaler.Scale;
+            int minTrgSize = trgWidth * (yLast - yFirst) * this._scaler.Scale;
+            if (trg.Length < minTrgSize)
+            {
+                throw new ArgumentException("Destination array not large enough", nameof(trg));
+            }
 
             //temporary buffer for "on the fly preprocessing"
-            var preProcBuffer = new char[srcWidth];
+            char[] preProcBuffer = new char[srcWidth];
 
-            var ker4 = new Kernel4x4();
+            Kernel4x4 ker4 = new Kernel4x4();
 
             //initialize preprocessing buffer for first row:
             //detect upper left and right corner blending
@@ -259,18 +270,18 @@ namespace xBRZNet
             //stripes; we must not allow for a memory race condition!
             if (yFirst > 0)
             {
-                var y = yFirst - 1;
+                int y = yFirst - 1;
 
-                var sM1 = srcWidth * Math.Max(y - 1, 0);
-                var s0 = srcWidth * y; //center line
-                var sP1 = srcWidth * Math.Min(y + 1, srcHeight - 1);
-                var sP2 = srcWidth * Math.Min(y + 2, srcHeight - 1);
+                int sM1 = srcWidth * Math.Max(y - 1, 0);
+                int s0 = srcWidth * y; //center line
+                int sP1 = srcWidth * Math.Min(y + 1, srcHeight - 1);
+                int sP2 = srcWidth * Math.Min(y + 2, srcHeight - 1);
 
-                for (var x = 0; x<srcWidth; ++x)
+                for (int x = 0; x < srcWidth; ++x)
                 {
-                    var xM1 = Math.Max(x - 1, 0);
-                    var xP1 = Math.Min(x + 1, srcWidth - 1);
-                    var xP2 = Math.Min(x + 2, srcWidth - 1);
+                    int xM1 = Math.Max(x - 1, 0);
+                    int xP1 = Math.Min(x + 1, srcWidth - 1);
+                    int xP2 = Math.Min(x + 2, srcWidth - 1);
 
                     //read sequentially from memory as far as possible
                     ker4.A = src[sM1 + xM1];
@@ -293,7 +304,7 @@ namespace xBRZNet
                     ker4.O = src[sP2 + xP1];
                     ker4.P = src[sP2 + xP2];
 
-                    PreProcessCorners(ker4); // writes to blendResult
+                    this.PreProcessCorners(ker4); // writes to blendResult
                     /*
                     preprocessing blend result:
                     ---------
@@ -302,40 +313,40 @@ namespace xBRZNet
                     | J | K |
                     ---------
                     */
-                    preProcBuffer[x] = preProcBuffer[x].SetTopR(_blendResult.J);
+                    preProcBuffer[x] = preProcBuffer[x].SetTopR(this._blendResult.J);
 
                     if (x + 1 < srcWidth)
                     {
-                        preProcBuffer[x + 1] = preProcBuffer[x + 1].SetTopL(_blendResult.K);
+                        preProcBuffer[x + 1] = preProcBuffer[x + 1].SetTopL(this._blendResult.K);
                     }
                 }
             }
 
-            _outputMatrix = new OutputMatrix(_scaler.Scale, trg, trgWidth);
+            this._outputMatrix = new OutputMatrix(this._scaler.Scale, trg, trgWidth);
 
-            var ker3 = new Kernel3x3();
+            Kernel3x3 ker3 = new Kernel3x3();
 
-            for (var y = yFirst; y<yLast; ++y)
+            for (int y = yFirst; y < yLast; ++y)
             {
                 //consider MT "striped" access
-                var trgi = _scaler.Scale * y * trgWidth;
+                int trgi = this._scaler.Scale * y * trgWidth;
 
-                var sM1 = srcWidth * Math.Max(y - 1, 0);
-                var s0 = srcWidth * y; //center line
-                var sP1 = srcWidth * Math.Min(y + 1, srcHeight - 1);
-                var sP2 = srcWidth * Math.Min(y + 2, srcHeight - 1);
+                int sM1 = srcWidth * Math.Max(y - 1, 0);
+                int s0 = srcWidth * y; //center line
+                int sP1 = srcWidth * Math.Min(y + 1, srcHeight - 1);
+                int sP2 = srcWidth * Math.Min(y + 2, srcHeight - 1);
 
-                var blendXy1 = (char)0;
+                char blendXy1 = (char)0;
 
-                for (var x = 0; x < srcWidth; ++x, trgi += _scaler.Scale)
+                for (int x = 0; x < srcWidth; ++x, trgi += this._scaler.Scale)
                 {
-                    var xM1 = Math.Max(x - 1, 0);
-                    var xP1 = Math.Min(x + 1, srcWidth - 1);
-                    var xP2 = Math.Min(x + 2, srcWidth - 1);
+                    int xM1 = Math.Max(x - 1, 0);
+                    int xP1 = Math.Min(x + 1, srcWidth - 1);
+                    int xP2 = Math.Min(x + 2, srcWidth - 1);
 
                     //evaluate the four corners on bottom-right of current pixel
                     //blend_xy for current (x, y) position
-                    
+
                     //read sequentially from memory as far as possible
                     ker4.A = src[sM1 + xM1];
                     ker4.B = src[sM1 + x];
@@ -357,7 +368,7 @@ namespace xBRZNet
                     ker4.O = src[sP2 + xP1];
                     ker4.P = src[sP2 + xP2];
 
-                    PreProcessCorners(ker4); // writes to blendResult
+                    this.PreProcessCorners(ker4); // writes to blendResult
 
                     /*
                         preprocessing blend result:
@@ -370,27 +381,27 @@ namespace xBRZNet
 
                     //all four corners of (x, y) have been determined at
                     //this point due to processing sequence!
-                    var blendXy = preProcBuffer[x].SetBottomR(_blendResult.F);
+                    char blendXy = preProcBuffer[x].SetBottomR(this._blendResult.F);
 
                     //set 2nd known corner for (x, y + 1)
-                    blendXy1 = blendXy1.SetTopR(_blendResult.J);
+                    blendXy1 = blendXy1.SetTopR(this._blendResult.J);
                     //store on current buffer position for use on next row
                     preProcBuffer[x] = blendXy1;
 
                     //set 1st known corner for (x + 1, y + 1) and
                     //buffer for use on next column
-                    blendXy1 = ((char)0).SetTopL(_blendResult.K);
+                    blendXy1 = ((char)0).SetTopL(this._blendResult.K);
 
                     if (x + 1 < srcWidth)
                     {
                         //set 3rd known corner for (x + 1, y)
-                        preProcBuffer[x + 1] = preProcBuffer[x + 1].SetBottomL(_blendResult.G);
+                        preProcBuffer[x + 1] = preProcBuffer[x + 1].SetBottomL(this._blendResult.G);
                     }
 
                     //fill block of size scale * scale with the given color
                     //  //place *after* preprocessing step, to not overwrite the
                     //  //results while processing the the last pixel!
-                    FillBlock(trg, trgi, trgWidth, src[s0 + x], _scaler.Scale);
+                    FillBlock(trg, trgi, trgWidth, src[s0 + x], this._scaler.Scale);
 
                     //blend four corners of current pixel
                     if (blendXy == 0) continue;
@@ -410,11 +421,11 @@ namespace xBRZNet
                     ker3._[h] = src[sP1 + x];
                     ker3._[i] = src[sP1 + xP1];
 
-                    ScalePixel(_scaler, (int)RotationDegree.R0, ker3, trgi, blendXy);
-                    ScalePixel(_scaler, (int)RotationDegree.R90, ker3, trgi, blendXy);
-                    ScalePixel(_scaler, (int)RotationDegree.R180, ker3, trgi, blendXy);
-                    ScalePixel(_scaler, (int)RotationDegree.R270, ker3, trgi, blendXy);
-               }
+                    this.ScalePixel(this._scaler, (int)RotationDegree.R0, ker3, trgi, blendXy);
+                    this.ScalePixel(this._scaler, (int)RotationDegree.R90, ker3, trgi, blendXy);
+                    this.ScalePixel(this._scaler, (int)RotationDegree.R180, ker3, trgi, blendXy);
+                    this.ScalePixel(this._scaler, (int)RotationDegree.R270, ker3, trgi, blendXy);
+                }
             }
         }
     }

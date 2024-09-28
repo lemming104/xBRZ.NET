@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <!-- Set default TargetFramework to 8.x -->
+    <TargetFramework>net80</TargetFramework>
+
+    <!-- Favor 64-bit ISA if unspecified -->
+    <Prefer32Bit>false</Prefer32Bit>
+
+    <!-- Set zero tolerance for warnings. Exclude specific warnings with NoWarn or pragmas as needed. -->
+    <WarningLevel>9999</WarningLevel>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    
+    <Nullable>enable</Nullable>
+    
+    <!-- Enable AOT and max out the trim warnings -->
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <IsTrimmable>true</IsTrimmable>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishAot>true</PublishAot>
+  </PropertyGroup>
+</Project>

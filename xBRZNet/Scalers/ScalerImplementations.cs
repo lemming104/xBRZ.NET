@@ -1,7 +1,7 @@
-﻿using xBRZNet.Common;
-
-namespace xBRZNet.Scalers
+﻿namespace xBRZNet.Scalers
 {
+    using xBRZNet.Common;
+
     internal interface IScaler
     {
         int Scale { get; }
@@ -21,20 +21,20 @@ namespace xBRZNet.Scalers
             //assert 0 < n && n < m : "0 < N && N < M";
 
             //this works because 8 upper bits are free
-            var dst = dstPtr.Get();
-            var redComponent = BlendComponent(Mask.Red, n, m, dst, col);
-            var greenComponent = BlendComponent(Mask.Green, n, m, dst, col);
-            var blueComponent = BlendComponent(Mask.Blue, n, m, dst, col);
-            var blend = (redComponent | greenComponent | blueComponent);
+            int dst = dstPtr.Get();
+            int redComponent = BlendComponent(Mask.Red, n, m, dst, col);
+            int greenComponent = BlendComponent(Mask.Green, n, m, dst, col);
+            int blueComponent = BlendComponent(Mask.Blue, n, m, dst, col);
+            int blend = redComponent | greenComponent | blueComponent;
             dstPtr.Set(blend | unchecked((int)0xff000000)); // MJY: Added required cast but will throw an exception if the asserts at the top are not checked.
         }
 
         private static int BlendComponent(int mask, int n, int m, int inPixel, int setPixel)
         {
-            var inChan = inPixel & mask;
-            var setChan = setPixel & mask;
-            var blend = setChan * n + inChan * (m - n);
-            var component = mask & (blend / m);
+            int inChan = inPixel & mask;
+            int setChan = setPixel & mask;
+            int blend = (setChan * n) + (inChan * (m - n));
+            int component = mask & (blend / m);
             return component;
         }
     }
@@ -45,14 +45,14 @@ namespace xBRZNet.Scalers
 
         public void BlendLineShallow(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(Scale - 1, 0), col);
-            AlphaBlend(3, 4, out_.Ref(Scale - 1, 1), col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 1, 0), col);
+            AlphaBlend(3, 4, out_.Ref(this.Scale - 1, 1), col);
         }
 
         public void BlendLineSteep(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(0, Scale - 1), col);
-            AlphaBlend(3, 4, out_.Ref(1, Scale - 1), col);
+            AlphaBlend(1, 4, out_.Ref(0, this.Scale - 1), col);
+            AlphaBlend(3, 4, out_.Ref(1, this.Scale - 1), col);
         }
 
         public void BlendLineSteepAndShallow(int col, OutputMatrix out_)
@@ -80,18 +80,18 @@ namespace xBRZNet.Scalers
 
         public void BlendLineShallow(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(Scale - 1, 0), col);
-            AlphaBlend(1, 4, out_.Ref(Scale - 2, 2), col);
-            AlphaBlend(3, 4, out_.Ref(Scale - 1, 1), col);
-            out_.Ref(Scale - 1, 2).Set(col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 1, 0), col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 2, 2), col);
+            AlphaBlend(3, 4, out_.Ref(this.Scale - 1, 1), col);
+            out_.Ref(this.Scale - 1, 2).Set(col);
         }
 
         public void BlendLineSteep(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(0, Scale - 1), col);
-            AlphaBlend(1, 4, out_.Ref(2, Scale - 2), col);
-            AlphaBlend(3, 4, out_.Ref(1, Scale - 1), col);
-            out_.Ref(2, Scale - 1).Set(col);
+            AlphaBlend(1, 4, out_.Ref(0, this.Scale - 1), col);
+            AlphaBlend(1, 4, out_.Ref(2, this.Scale - 2), col);
+            AlphaBlend(3, 4, out_.Ref(1, this.Scale - 1), col);
+            out_.Ref(2, this.Scale - 1).Set(col);
         }
 
         public void BlendLineSteepAndShallow(int col, OutputMatrix out_)
@@ -125,22 +125,22 @@ namespace xBRZNet.Scalers
 
         public void BlendLineShallow(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(Scale - 1, 0), col);
-            AlphaBlend(1, 4, out_.Ref(Scale - 2, 2), col);
-            AlphaBlend(3, 4, out_.Ref(Scale - 1, 1), col);
-            AlphaBlend(3, 4, out_.Ref(Scale - 2, 3), col);
-            out_.Ref(Scale - 1, 2).Set(col);
-            out_.Ref(Scale - 1, 3).Set(col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 1, 0), col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 2, 2), col);
+            AlphaBlend(3, 4, out_.Ref(this.Scale - 1, 1), col);
+            AlphaBlend(3, 4, out_.Ref(this.Scale - 2, 3), col);
+            out_.Ref(this.Scale - 1, 2).Set(col);
+            out_.Ref(this.Scale - 1, 3).Set(col);
         }
 
         public void BlendLineSteep(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(0, Scale - 1), col);
-            AlphaBlend(1, 4, out_.Ref(2, Scale - 2), col);
-            AlphaBlend(3, 4, out_.Ref(1, Scale - 1), col);
-            AlphaBlend(3, 4, out_.Ref(3, Scale - 2), col);
-            out_.Ref(2, Scale - 1).Set(col);
-            out_.Ref(3, Scale - 1).Set(col);
+            AlphaBlend(1, 4, out_.Ref(0, this.Scale - 1), col);
+            AlphaBlend(1, 4, out_.Ref(2, this.Scale - 2), col);
+            AlphaBlend(3, 4, out_.Ref(1, this.Scale - 1), col);
+            AlphaBlend(3, 4, out_.Ref(3, this.Scale - 2), col);
+            out_.Ref(2, this.Scale - 1).Set(col);
+            out_.Ref(3, this.Scale - 1).Set(col);
         }
 
         public void BlendLineSteepAndShallow(int col, OutputMatrix out_)
@@ -157,9 +157,9 @@ namespace xBRZNet.Scalers
 
         public void BlendLineDiagonal(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 2, out_.Ref(Scale - 1, Scale / 2), col);
-            AlphaBlend(1, 2, out_.Ref(Scale - 2, Scale / 2 + 1), col);
-            out_.Ref(Scale - 1, Scale - 1).Set(col);
+            AlphaBlend(1, 2, out_.Ref(this.Scale - 1, this.Scale / 2), col);
+            AlphaBlend(1, 2, out_.Ref(this.Scale - 2, (this.Scale / 2) + 1), col);
+            out_.Ref(this.Scale - 1, this.Scale - 1).Set(col);
         }
 
         public void BlendCorner(int col, OutputMatrix out_)
@@ -177,51 +177,51 @@ namespace xBRZNet.Scalers
 
         public void BlendLineShallow(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(Scale - 1, 0), col);
-            AlphaBlend(1, 4, out_.Ref(Scale - 2, 2), col);
-            AlphaBlend(1, 4, out_.Ref(Scale - 3, 4), col);
-            AlphaBlend(3, 4, out_.Ref(Scale - 1, 1), col);
-            AlphaBlend(3, 4, out_.Ref(Scale - 2, 3), col);
-            out_.Ref(Scale - 1, 2).Set(col);
-            out_.Ref(Scale - 1, 3).Set(col);
-            out_.Ref(Scale - 1, 4).Set(col);
-            out_.Ref(Scale - 2, 4).Set(col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 1, 0), col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 2, 2), col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 3, 4), col);
+            AlphaBlend(3, 4, out_.Ref(this.Scale - 1, 1), col);
+            AlphaBlend(3, 4, out_.Ref(this.Scale - 2, 3), col);
+            out_.Ref(this.Scale - 1, 2).Set(col);
+            out_.Ref(this.Scale - 1, 3).Set(col);
+            out_.Ref(this.Scale - 1, 4).Set(col);
+            out_.Ref(this.Scale - 2, 4).Set(col);
         }
 
         public void BlendLineSteep(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(0, Scale - 1), col);
-            AlphaBlend(1, 4, out_.Ref(2, Scale - 2), col);
-            AlphaBlend(1, 4, out_.Ref(4, Scale - 3), col);
-            AlphaBlend(3, 4, out_.Ref(1, Scale - 1), col);
-            AlphaBlend(3, 4, out_.Ref(3, Scale - 2), col);
-            out_.Ref(2, Scale - 1).Set(col);
-            out_.Ref(3, Scale - 1).Set(col);
-            out_.Ref(4, Scale - 1).Set(col);
-            out_.Ref(4, Scale - 2).Set(col);
+            AlphaBlend(1, 4, out_.Ref(0, this.Scale - 1), col);
+            AlphaBlend(1, 4, out_.Ref(2, this.Scale - 2), col);
+            AlphaBlend(1, 4, out_.Ref(4, this.Scale - 3), col);
+            AlphaBlend(3, 4, out_.Ref(1, this.Scale - 1), col);
+            AlphaBlend(3, 4, out_.Ref(3, this.Scale - 2), col);
+            out_.Ref(2, this.Scale - 1).Set(col);
+            out_.Ref(3, this.Scale - 1).Set(col);
+            out_.Ref(4, this.Scale - 1).Set(col);
+            out_.Ref(4, this.Scale - 2).Set(col);
         }
 
         public void BlendLineSteepAndShallow(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 4, out_.Ref(0, Scale - 1), col);
-            AlphaBlend(1, 4, out_.Ref(2, Scale - 2), col);
-            AlphaBlend(3, 4, out_.Ref(1, Scale - 1), col);
-            AlphaBlend(1, 4, out_.Ref(Scale - 1, 0), col);
-            AlphaBlend(1, 4, out_.Ref(Scale - 2, 2), col);
-            AlphaBlend(3, 4, out_.Ref(Scale - 1, 1), col);
-            out_.Ref(2, Scale - 1).Set(col);
-            out_.Ref(3, Scale - 1).Set(col);
-            out_.Ref(Scale - 1, 2).Set(col);
-            out_.Ref(Scale - 1, 3).Set(col);
-            out_.Ref(4, Scale - 1).Set(col);
+            AlphaBlend(1, 4, out_.Ref(0, this.Scale - 1), col);
+            AlphaBlend(1, 4, out_.Ref(2, this.Scale - 2), col);
+            AlphaBlend(3, 4, out_.Ref(1, this.Scale - 1), col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 1, 0), col);
+            AlphaBlend(1, 4, out_.Ref(this.Scale - 2, 2), col);
+            AlphaBlend(3, 4, out_.Ref(this.Scale - 1, 1), col);
+            out_.Ref(2, this.Scale - 1).Set(col);
+            out_.Ref(3, this.Scale - 1).Set(col);
+            out_.Ref(this.Scale - 1, 2).Set(col);
+            out_.Ref(this.Scale - 1, 3).Set(col);
+            out_.Ref(4, this.Scale - 1).Set(col);
             AlphaBlend(2, 3, out_.Ref(3, 3), col);
         }
 
         public void BlendLineDiagonal(int col, OutputMatrix out_)
         {
-            AlphaBlend(1, 8, out_.Ref(Scale - 1, Scale / 2), col);
-            AlphaBlend(1, 8, out_.Ref(Scale - 2, Scale / 2 + 1), col);
-            AlphaBlend(1, 8, out_.Ref(Scale - 3, Scale / 2 + 2), col);
+            AlphaBlend(1, 8, out_.Ref(this.Scale - 1, this.Scale / 2), col);
+            AlphaBlend(1, 8, out_.Ref(this.Scale - 2, (this.Scale / 2) + 1), col);
+            AlphaBlend(1, 8, out_.Ref(this.Scale - 3, (this.Scale / 2) + 2), col);
             AlphaBlend(7, 8, out_.Ref(4, 3), col);
             AlphaBlend(7, 8, out_.Ref(3, 4), col);
             out_.Ref(4, 4).Set(col);
@@ -233,8 +233,8 @@ namespace xBRZNet.Scalers
             AlphaBlend(86, 100, out_.Ref(4, 4), col); //exact: 0.8631434088
             AlphaBlend(23, 100, out_.Ref(4, 3), col); //0.2306749731
             AlphaBlend(23, 100, out_.Ref(3, 4), col); //0.2306749731
-                                                        //alphaBlend(8, 1000, out.ref(4, 2), col); //0.008384061834 -> negligable
-                                                        //alphaBlend(8, 1000, out.ref(2, 4), col); //0.008384061834
+                                                      //alphaBlend(8, 1000, out.ref(4, 2), col); //0.008384061834 -> negligable
+                                                      //alphaBlend(8, 1000, out.ref(2, 4), col); //0.008384061834
         }
     }
 }

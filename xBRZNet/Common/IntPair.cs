@@ -7,8 +7,8 @@
 
         public IntPair(int i, int j)
         {
-            I = i;
-            J = j;
+            this.I = i;
+            this.J = j;
         }
     }
 }

@@ -9,7 +9,7 @@
 
         public void Reset()
         {
-            F = G = J = K = (char)0;
+            this.F = this.G = this.J = this.K = (char)0;
         }
     }
 }

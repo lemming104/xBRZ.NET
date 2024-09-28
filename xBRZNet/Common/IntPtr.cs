@@ -7,22 +7,22 @@
 
         public IntPtr(int[] array)
         {
-            _array = array;
+            this._array = array;
         }
 
         public void Position(int position)
         {
-            _ptr = position;
+            this._ptr = position;
         }
 
         public int Get()
         {
-            return _array[_ptr];
+            return this._array[this._ptr];
         }
 
         public void Set(int val)
         {
-            _array[_ptr] = val;
+            this._array[this._ptr] = val;
         }
     }
 }

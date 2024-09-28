@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
-
-namespace xBRZNet.Scalers
+﻿namespace xBRZNet.Scalers
 {
+    using System;
+    using System.Linq;
+
     internal static class Rot
     {
         public const int MaxRotations = 4; // Number of 90 degree rotations
@@ -16,11 +16,11 @@ namespace xBRZNet.Scalers
 
         static Rot()
         {
-            var rotation = Enumerable.Range(0, MaxPositions).ToArray();
-            var sideLength = (int) Math.Sqrt(MaxPositions);
-            for (var rot = 0; rot < MaxRotations; rot++)
+            int[] rotation = Enumerable.Range(0, MaxPositions).ToArray();
+            int sideLength = (int)Math.Sqrt(MaxPositions);
+            for (int rot = 0; rot < MaxRotations; rot++)
             {
-                for (var pos = 0; pos < MaxPositions; pos++)
+                for (int pos = 0; pos < MaxPositions; pos++)
                 {
                     _[(pos * MaxRotations) + rot] = rotation[pos];
                 }
@@ -31,14 +31,14 @@ namespace xBRZNet.Scalers
         //http://stackoverflow.com/a/38964502/294804
         private static int[] RotateClockwise(this int[] square1DMatrix, int? sideLength = null)
         {
-            var size = sideLength ?? (int)Math.Sqrt(square1DMatrix.Length);
-            var result = new int[square1DMatrix.Length];
+            int size = sideLength ?? (int)Math.Sqrt(square1DMatrix.Length);
+            int[] result = new int[square1DMatrix.Length];
 
-            for (var i = 0; i < size; ++i)
+            for (int i = 0; i < size; ++i)
             {
-                for (var j = 0; j < size; ++j)
+                for (int j = 0; j < size; ++j)
                 {
-                    result[i * size + j] = square1DMatrix[(size - j - 1) * size + i];
+                    result[(i * size) + j] = square1DMatrix[((size - j - 1) * size) + i];
                 }
             }
 
