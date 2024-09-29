@@ -3,5 +3,32 @@
     <IsTrimmable>true</IsTrimmable>
     <PublishAot>true</PublishAot>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <Description><![CDATA[A .NET implementation of xBRZ.  This is a slight modification of https://github.com/MiYanni/xBRZ.NET
+    
+    Note that the math in this library makes little-endian assumptions, and that it uses an unusual byte ordering (BGRA).
+    
+    Methods are provided to assist with byte ordering conversions.
+]]></Description>
+    <Authors>lemming104</Authors>
+    <Company></Company>
+    <Product>xBRZNet</Product>
+    <Copyright></Copyright>
+    <PackageProjectUrl>https://github.com/lemming104/xBRZ.NET</PackageProjectUrl>
+    <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>
+    <PackageTags>image, filter, scaler, xBR, xBRZ</PackageTags>
+    <PackageId>xBRZNet</PackageId>
+
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="" Link="README.md" />
+  </ItemGroup>
 </Project>

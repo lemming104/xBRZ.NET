@@ -47,7 +47,9 @@
         of the xBRZ class.
     */
 
-    // ReSharper disable once InconsistentNaming
+    /// <summary>
+    /// A scaler that uses the xBRZ algorithm
+    /// </summary>
     public class xBRZScaler
     {
         private readonly ScalerCfg _cfg;
@@ -66,6 +68,11 @@
             }
         }
 
+        /// <summary>
+        /// Creates a new scaler with the specified scale factor and configuration
+        /// </summary>
+        /// <param name="scaleSize">Scale factor (2 - 5)</param>
+        /// <param name="cfg">Scaler configuration</param>
         public xBRZScaler(int scaleSize, ScalerCfg cfg)
         {
             this._scaler = scaleSize.ToIScaler();
@@ -240,11 +247,12 @@
             this.ScaleImage(src, trg, 0, src.Height);
         }
 
-        /// <param name="src.Width">Source image width</param>
-        /// <param name="src.Height">Source image height</param>
+
+        /// <param name="src">Source image</param>
+        /// <param name="dest">Destination image</param>
         /// <param name="yFirst">First row to process</param>
         /// <param name="yLast">Last row to process</param>
-        public void ScaleImage(Image src, Image trg, int yFirst, int yLast)
+        public void ScaleImage(Image src, Image dest, int yFirst, int yLast)
         {
             yFirst = Math.Max(yFirst, 0);
             yLast = Math.Min(yLast, src.Height);
@@ -261,9 +269,9 @@
 
             int trgWidth = src.Width * this._scaler.Scale;
             int minTrgSize = trgWidth * (yLast - yFirst) * this._scaler.Scale;
-            if (trg.Data.Length < minTrgSize)
+            if (dest.Data.Length < minTrgSize)
             {
-                throw new ArgumentException("Destination array not large enough", nameof(trg));
+                throw new ArgumentException("Destination array not large enough", nameof(dest));
             }
 
             //temporary buffer for "on the fly preprocessing"
@@ -329,7 +337,7 @@
                 }
             }
 
-            this._outputMatrix = new OutputMatrix(this._scaler.Scale, trg.Data, trgWidth);
+            this._outputMatrix = new OutputMatrix(this._scaler.Scale, dest.Data, trgWidth);
 
             Kernel3x3 ker3 = new Kernel3x3();
 
@@ -408,7 +416,7 @@
                     //fill block of size scale * scale with the given color
                     //  //place *after* preprocessing step, to not overwrite the
                     //  //results while processing the the last pixel!
-                    FillBlock(trg.Data, trgi, trgWidth, src.Data[s0 + x], this._scaler.Scale);
+                    FillBlock(dest.Data, trgi, trgWidth, src.Data[s0 + x], this._scaler.Scale);
 
                     //blend four corners of current pixel
                     if (blendXy == 0) continue;
