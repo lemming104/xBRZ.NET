@@ -35,7 +35,9 @@
 
             // Skip division by 255.
             // Also skip square root here by pre-squaring the config option equalColorTolerance.
-            return Math.Pow(this.Cfg.LuminanceWeight * y, 2) + Math.Pow(cB, 2) + Math.Pow(cR, 2);
+            double yWeighted = this.Cfg.LuminanceWeight * y;
+
+            return (yWeighted * yWeighted) + (cB * cB) + (cR * cR);
         }
     }
 }
