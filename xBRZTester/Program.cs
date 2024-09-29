@@ -1,11 +1,15 @@
 ﻿namespace xBRZTester
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
 
     public static class Program
     {
+        private static Stopwatch overallTimer = new Stopwatch();
+        private static Stopwatch brzTimer = new Stopwatch();
+
         public static void Main(string[] args)
         {
             if (args.Length != 3)
@@ -31,7 +35,7 @@
             {
                 if (!Directory.Exists(args[1]))
                 {
-                    Directory.CreateDirectory(args[1]);
+                    _ = Directory.CreateDirectory(args[1]);
                 }
 
                 inputFiles = Directory.GetFiles(args[0]);
@@ -45,7 +49,7 @@
                 string? dirName = Path.GetDirectoryName(args[1]);
                 if (dirName != null && !Directory.Exists(dirName))
                 {
-                    Directory.CreateDirectory(dirName);
+                    _ = Directory.CreateDirectory(dirName);
                 }
             }
 
@@ -59,6 +63,10 @@
         {
             xBRZNet.xBRZScaler scaler = new xBRZNet.xBRZScaler(scale, xBRZNet.ScalerCfg.Default);
 
+            overallTimer.Reset();
+            brzTimer.Reset();
+
+            overallTimer.Start();
             using (xBRZNet.Image image = Converters.LoadImageArgb(inputFile, out int width, out int height))
             {
                 int newWidth = width * scale;
@@ -66,10 +74,15 @@
 
                 using (xBRZNet.Image output = new xBRZNet.Image(newWidth, newHeight))
                 {
+                    brzTimer.Start();
                     scaler.ScaleImage(image, output);
-                    Converters.WriteImageArgb(output.Data, newWidth, newHeight, outputFile);
+                    brzTimer.Stop();
+                    Converters.WriteImageArgb(output, outputFile);
                 }
             }
+            overallTimer.Stop();
+
+            Console.WriteLine($"{inputFile} Overall: {overallTimer.ElapsedMilliseconds} Scaler only: {brzTimer.ElapsedMilliseconds}");
         }
     }
 }

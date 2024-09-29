@@ -1,7 +1,6 @@
 ﻿namespace xBRZNet
 {
     using System;
-    using System.Drawing;
     using xBRZNet.Blend;
     using xBRZNet.Color;
     using xBRZNet.Common;
@@ -58,6 +57,14 @@
 
         private readonly ColorDist _colorDistance;
         private readonly ColorEq _colorEqualizer;
+
+        static xBRZScaler()
+        {
+            if (!BitConverter.IsLittleEndian)
+            {
+                throw new PlatformNotSupportedException("Not supported on big-endian systems.");
+            }
+        }
 
         public xBRZScaler(int scaleSize, ScalerCfg cfg)
         {
@@ -230,7 +237,7 @@
         /// <param name="trg">Target image</param>
         public void ScaleImage(Image src, Image trg)
         {
-            ScaleImage(src, trg, 0, src.Height);
+            this.ScaleImage(src, trg, 0, src.Height);
         }
 
         /// <param name="src.Width">Source image width</param>
