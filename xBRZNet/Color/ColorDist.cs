@@ -1,7 +1,5 @@
 ﻿namespace xBRZNet.Color
 {
-    using xBRZNet.Common;
-
     internal class ColorDist
     {
         protected readonly ScalerCfg Cfg;
@@ -17,9 +15,9 @@
 
             //http://en.wikipedia.org/wiki/YCbCr#ITU-R_BT.601_conversion
             //YCbCr conversion is a matrix multiplication => take advantage of linearity by subtracting first!
-            int rDiff = (unchecked((int)(pix1 & Mask.Red)) - unchecked((int)(pix2 & Mask.Red))) >> Mask.RedShiftBits; //we may delay division by 255 to after matrix multiplication
-            int gDiff = (unchecked((int)(pix1 & Mask.Green)) - unchecked((int)(pix2 & Mask.Green))) >> Mask.GreenShiftBits;
-            int bDiff = (unchecked((int)(pix1 & Mask.Blue)) - unchecked((int)(pix2 & Mask.Blue))) >> Mask.BlueShiftBits; //subtraction for int is noticeable faster than for double
+            int rDiff = (unchecked((int)(pix1 & this.Cfg.Mask.Red)) - unchecked((int)(pix2 & this.Cfg.Mask.Red))) >> this.Cfg.Mask.RedShiftBits; //we may delay division by 255 to after matrix multiplication
+            int gDiff = (unchecked((int)(pix1 & this.Cfg.Mask.Green)) - unchecked((int)(pix2 & this.Cfg.Mask.Green))) >> this.Cfg.Mask.GreenShiftBits;
+            int bDiff = (unchecked((int)(pix1 & this.Cfg.Mask.Blue)) - unchecked((int)(pix2 & this.Cfg.Mask.Blue))) >> this.Cfg.Mask.BlueShiftBits; //subtraction for int is noticeable faster than for double
 
             const double kB = 0.0722; //ITU-R BT.709 conversion
             const double kR = 0.2126;

@@ -7,8 +7,8 @@
 
     public static class Program
     {
-        private static Stopwatch overallTimer = new Stopwatch();
-        private static Stopwatch brzTimer = new Stopwatch();
+        private static readonly Stopwatch overallTimer = new Stopwatch();
+        private static readonly Stopwatch brzTimer = new Stopwatch();
 
         public static void Main(string[] args)
         {
@@ -61,13 +61,17 @@
 
         private static void ProcessImage(string inputFile, string outputFile, int scale)
         {
-            xBRZNet.xBRZScaler scaler = new xBRZNet.xBRZScaler(scale, xBRZNet.ScalerCfg.Default);
+            xBRZNet.ScalerCfg cfg = new xBRZNet.ScalerCfg
+            {
+                ColorMode = xBRZNet.Common.ColorMode.RGBA
+            };
+            xBRZNet.xBRZScaler scaler = new xBRZNet.xBRZScaler(scale, cfg);
 
             overallTimer.Reset();
             brzTimer.Reset();
 
             overallTimer.Start();
-            using (xBRZNet.Image image = Converters.LoadImageArgb(inputFile, out int width, out int height))
+            using (xBRZNet.Image image = Converters.LoadImageRGBA(inputFile, out int width, out int height))
             {
                 int newWidth = width * scale;
                 int newHeight = height * scale;
@@ -77,7 +81,7 @@
                     brzTimer.Start();
                     scaler.ScaleImage(image, output);
                     brzTimer.Stop();
-                    Converters.WriteImageArgb(output, outputFile);
+                    Converters.WriteImageRGBA(output, outputFile);
                 }
             }
             overallTimer.Stop();

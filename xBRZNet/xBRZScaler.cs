@@ -60,14 +60,6 @@
         private readonly ColorDist _colorDistance;
         private readonly ColorEq _colorEqualizer;
 
-        static xBRZScaler()
-        {
-            if (!BitConverter.IsLittleEndian)
-            {
-                throw new PlatformNotSupportedException("Not supported on big-endian systems.");
-            }
-        }
-
         /// <summary>
         /// Creates a new scaler with the specified scale factor and configuration
         /// </summary>
@@ -201,7 +193,7 @@
 
             if (!doLineBlend)
             {
-                scaler.BlendCorner(px, out_);
+                scaler.BlendCorner(this._cfg.Mask, px, out_);
                 return;
             }
 
@@ -217,22 +209,22 @@
             {
                 if (haveSteepLine)
                 {
-                    scaler.BlendLineSteepAndShallow(px, out_);
+                    scaler.BlendLineSteepAndShallow(this._cfg.Mask, px, out_);
                 }
                 else
                 {
-                    scaler.BlendLineShallow(px, out_);
+                    scaler.BlendLineShallow(this._cfg.Mask, px, out_);
                 }
             }
             else
             {
                 if (haveSteepLine)
                 {
-                    scaler.BlendLineSteep(px, out_);
+                    scaler.BlendLineSteep(this._cfg.Mask, px, out_);
                 }
                 else
                 {
-                    scaler.BlendLineDiagonal(px, out_);
+                    scaler.BlendLineDiagonal(this._cfg.Mask, px, out_);
                 }
             }
         }
