@@ -25,8 +25,9 @@
             uint redComponent = BlendComponent(Mask.Red, n, m, dst, col);
             uint greenComponent = BlendComponent(Mask.Green, n, m, dst, col);
             uint blueComponent = BlendComponent(Mask.Blue, n, m, dst, col);
-            uint blend = redComponent | greenComponent | blueComponent;
-            dstPtr.Set(blend | unchecked(0xff000000));
+            uint alphaComponent = Mask.Alpha & 0xffffffff;
+            uint blend = redComponent | greenComponent | blueComponent | alphaComponent;
+            dstPtr.Set(blend);
         }
 
         private static uint BlendComponent(uint mask, int n, int m, uint inPixel, uint setPixel)
