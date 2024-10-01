@@ -7,7 +7,7 @@
 
     public class Converters
     {
-        public static xBRZNet.Image LoadImageArgb(string fileName, out int width, out int height)
+        public static xBRZNet.Image LoadImageRGBA(string fileName, out int width, out int height)
         {
             using (Image image = Image.Load(fileName))
             {
@@ -44,9 +44,9 @@
             }
         }
 
-        public static void WriteImageArgb(xBRZNet.Image image, string fileName)
+        public static void WriteImageRGBA(xBRZNet.Image image, string fileName)
         {
-            using (xBRZNet.PooledArray<byte> rgbaBytes = image.ToRgba())
+            using (xBRZNet.PooledArray<byte> rgbaBytes = image.ToBytes())
             {
                 Image<Rgba32> outputImage = Image.LoadPixelData<Rgba32>(rgbaBytes.Data, image.Width, image.Height);
                 outputImage.SaveAsPng(fileName);

@@ -15,9 +15,9 @@
     // ReSharper disable once InconsistentNaming
     internal class Kernel4x4
     {
-        public int A, B, C, D;
-        public int E, F, G, H;
-        public int I, J, K, L;
-        public int M, N, O, P;
+        public uint A, B, C, D;
+        public uint E, F, G, H;
+        public uint I, J, K, L;
+        public uint M, N, O, P;
     }
 }
