@@ -19,17 +19,21 @@
         /// </summary>
         public readonly int Height;
 
-        internal readonly uint[] Data;
+        /// <summary>
+        /// The raw data of the image, represented as unsigned integers
+        /// </summary>
+        public readonly uint[] Data;
 
-        private readonly PooledArray<uint> m_dataPooled;
+        private readonly PooledArray<uint>? m_dataPooled;
 
         /// <summary>
         /// Allocate a new Image of the specified size
         /// </summary>
         /// <param name="width">Width of the image, in pixels</param>
         /// <param name="height">Height of the image, in pixels</param>
+        /// <param name="sourceData">Source data, represented as unsigned integers</param>
         /// <exception cref="ArgumentException">Thrown if width or height are invalid</exception>
-        public Image(int width, int height)
+        public Image(int width, int height, uint[]? sourceData = null)
         {
             if (width <= 0)
             {
@@ -41,10 +45,22 @@
                 throw new ArgumentException("Height must be greater than zero", nameof(height));
             }
 
+            if (sourceData != null && sourceData.Length < width * height)
+            {
+                throw new ArgumentException("Source data does not match image dimensions");
+            }
+
             this.Width = width;
             this.Height = height;
-            this.m_dataPooled = new PooledArray<uint>(width * height);
-            this.Data = this.m_dataPooled.Data;
+            if (sourceData == null)
+            {
+                this.m_dataPooled = new PooledArray<uint>(width * height);
+                this.Data = this.m_dataPooled.Data;
+            }
+            else
+            {
+                this.Data = sourceData;
+            }
         }
 
         /// <summary>
@@ -52,7 +68,7 @@
         /// </summary>
         /// <param name="imageBytes">Source image bytesr</param>
         /// <exception cref="ArgumentException">Thrown if byte array is too small for specified dimensions</exception>
-        public unsafe void FromRgba(byte[] imageBytes)
+        public unsafe void FromBytes(byte[] imageBytes)
         {
             if (imageBytes.Length < this.Width * this.Height * 4)
             {
@@ -104,7 +120,7 @@
             {
                 if (disposing)
                 {
-                    this.m_dataPooled.Dispose();
+                    this.m_dataPooled?.Dispose();
                 }
 
                 this.disposedValue = true;

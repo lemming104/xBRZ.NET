@@ -37,7 +37,7 @@
                         }
 
                         xBRZNet.Image outputImage = new xBRZNet.Image(width, height);
-                        outputImage.FromRgba(imageBytes.Data);
+                        outputImage.FromBytes(imageBytes.Data);
                         return outputImage;
                     }
                 }
