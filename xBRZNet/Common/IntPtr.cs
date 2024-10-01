@@ -2,10 +2,10 @@
 {
     internal class IntPtr
     {
-        private readonly int[] _array;
+        private readonly uint[] _array;
         private int _ptr;
 
-        public IntPtr(int[] array)
+        public IntPtr(uint[] array)
         {
             this._array = array;
         }
@@ -15,12 +15,12 @@
             this._ptr = position;
         }
 
-        public int Get()
+        public uint Get()
         {
             return this._array[this._ptr];
         }
 
-        public void Set(int val)
+        public void Set(uint val)
         {
             this._array[this._ptr] = val;
         }

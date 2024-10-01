@@ -19,9 +19,9 @@
         /// </summary>
         public readonly int Height;
 
-        internal readonly int[] Data;
+        internal readonly uint[] Data;
 
-        private readonly PooledArray<int> m_dataPooled;
+        private readonly PooledArray<uint> m_dataPooled;
 
         /// <summary>
         /// Allocate a new Image of the specified size
@@ -43,7 +43,7 @@
 
             this.Width = width;
             this.Height = height;
-            this.m_dataPooled = new PooledArray<int>(width * height);
+            this.m_dataPooled = new PooledArray<uint>(width * height);
             this.Data = this.m_dataPooled.Data;
         }
 
@@ -59,7 +59,7 @@
                 throw new ArgumentException("Data does not match dimensions", nameof(argbBytes));
             }
 
-            fixed (int* imageDataFixed = this.Data)
+            fixed (uint* imageDataFixed = this.Data)
             {
                 byte* dataBytes = (byte*)imageDataFixed;
 
@@ -88,7 +88,7 @@
                 throw new ArgumentException("Data does not match dimensions", nameof(rgbaBytes));
             }
 
-            fixed (int* imageDataFixed = this.Data)
+            fixed (uint* imageDataFixed = this.Data)
             {
                 byte* dataBytes = (byte*)imageDataFixed;
 
@@ -114,7 +114,7 @@
             PooledArray<byte> retArray = new PooledArray<byte>(this.Data.Length * 4);
             byte[] argbBytes = retArray.Data;
 
-            fixed (int* imageDataFixed = this.Data)
+            fixed (uint* imageDataFixed = this.Data)
             {
                 byte* dataBytes = (byte*)imageDataFixed;
 
@@ -141,7 +141,7 @@
             PooledArray<byte> retArray = new PooledArray<byte>(this.Data.Length * 4);
             byte[] rgbaBytes = retArray.Data;
 
-            fixed (int* imageDataFixed = this.Data)
+            fixed (uint* imageDataFixed = this.Data)
             {
                 byte* dataBytes = (byte*)imageDataFixed;
 

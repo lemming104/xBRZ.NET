@@ -14,7 +14,7 @@
         private const int MaxScale = 5; // Highest possible scale
         private const int MaxScaleSquared = MaxScale * MaxScale;
 
-        public OutputMatrix(int scale, int[] outPtr, int outWidth)
+        public OutputMatrix(int scale, uint[] outPtr, int outWidth)
         {
             this._n = (scale - 2) * Rot.MaxRotations * MaxScaleSquared;
             this._out = new IntPtr(outPtr);

@@ -82,7 +82,7 @@
         }
 
         //fill block with the given color
-        private static void FillBlock(int[] trg, int trgi, int pitch, int col, int blockSize)
+        private static void FillBlock(uint[] trg, int trgi, int pitch, uint col, int blockSize)
         {
             for (int y = 0; y < blockSize; ++y, trgi += pitch)
             {
@@ -146,14 +146,14 @@
         private void ScalePixel(IScaler scaler, int rotDeg, Kernel3x3 ker, int trgi, char blendInfo)
         {
             // int a = ker._[Rot._[(0 << 2) + rotDeg]];
-            int b = ker._[Rot._[(1 << 2) + rotDeg]];
-            int c = ker._[Rot._[(2 << 2) + rotDeg]];
-            int d = ker._[Rot._[(3 << 2) + rotDeg]];
-            int e = ker._[Rot._[(4 << 2) + rotDeg]];
-            int f = ker._[Rot._[(5 << 2) + rotDeg]];
-            int g = ker._[Rot._[(6 << 2) + rotDeg]];
-            int h = ker._[Rot._[(7 << 2) + rotDeg]];
-            int i = ker._[Rot._[(8 << 2) + rotDeg]];
+            uint b = ker._[Rot._[(1 << 2) + rotDeg]];
+            uint c = ker._[Rot._[(2 << 2) + rotDeg]];
+            uint d = ker._[Rot._[(3 << 2) + rotDeg]];
+            uint e = ker._[Rot._[(4 << 2) + rotDeg]];
+            uint f = ker._[Rot._[(5 << 2) + rotDeg]];
+            uint g = ker._[Rot._[(6 << 2) + rotDeg]];
+            uint h = ker._[Rot._[(7 << 2) + rotDeg]];
+            uint i = ker._[Rot._[(8 << 2) + rotDeg]];
 
             char blend = blendInfo.Rotate((RotationDegree)rotDeg);
 
@@ -194,7 +194,7 @@
 #pragma warning restore ID0045
 
             //choose most similar color
-            int px = dist.DistYCbCr(e, f) <= dist.DistYCbCr(e, h) ? f : h;
+            uint px = dist.DistYCbCr(e, f) <= dist.DistYCbCr(e, h) ? f : h;
 
             OutputMatrix? out_ = this._outputMatrix;
             out_!.Move(rotDeg, trgi);
